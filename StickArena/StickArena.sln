@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2015
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StickArena.Plugins", "StickArena.Plugins.csproj", "{0DF37095-A6A5-92CB-FA26-B81FB9BCCF9C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StickArena", "StickArena.csproj", "{F36D44C6-7711-03C8-8B57-EE8FEF7D71DD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StickArena.Editor", "StickArena.Editor.csproj", "{519F2C34-6B63-1199-1402-0633AC10833B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0DF37095-A6A5-92CB-FA26-B81FB9BCCF9C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0DF37095-A6A5-92CB-FA26-B81FB9BCCF9C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0DF37095-A6A5-92CB-FA26-B81FB9BCCF9C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0DF37095-A6A5-92CB-FA26-B81FB9BCCF9C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F36D44C6-7711-03C8-8B57-EE8FEF7D71DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F36D44C6-7711-03C8-8B57-EE8FEF7D71DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F36D44C6-7711-03C8-8B57-EE8FEF7D71DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F36D44C6-7711-03C8-8B57-EE8FEF7D71DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{519F2C34-6B63-1199-1402-0633AC10833B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{519F2C34-6B63-1199-1402-0633AC10833B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{519F2C34-6B63-1199-1402-0633AC10833B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{519F2C34-6B63-1199-1402-0633AC10833B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

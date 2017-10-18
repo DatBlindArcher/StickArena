@@ -1,6 +1,7 @@
 ﻿using Steamworks;
 using System.Text;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Player
 {
@@ -43,8 +44,8 @@ public class GameController : MonoBehaviour
     }
 
     private bool steam = false;
-    private Player player = new Player();
-    private Lobby lobby = new Lobby();
+    public Player player = new Player();
+    public Lobby lobby = new Lobby();
 
     private CallResult<LobbyEnter_t> lobbyJoin;
     private CallResult<LobbyCreated_t> lobbyCreate;
@@ -54,27 +55,6 @@ public class GameController : MonoBehaviour
     private Callback<LobbyDataUpdate_t> lobbyDataUpdate;
     private Callback<P2PSessionRequest_t> P2PSessionRequest;
     private Callback<P2PSessionConnectFail_t> P2PSessionConnectFail;
-
-    private void OnGUI()
-    {
-        GUILayout.TextArea("Hello " + player.ID);
-
-        if (!lobby.ID.IsValid())
-        {
-            if (GUILayout.Button("Get Lobby"))
-            {
-                FindLobby();
-            }
-        }
-
-        else
-        {
-            if (GUILayout.Button("Leave Lobby"))
-            {
-                LeaveLobby();
-            }
-        }
-    }
 
     private void Update()
     {
@@ -95,6 +75,12 @@ public class GameController : MonoBehaviour
         InitSteam();
     }
 
+    public void StartGame()
+    {
+        SceneManager.LoadScene("Arena");
+    }
+
+    #region Steam
     private void InitSteam()
     {
         if (steam)
@@ -185,7 +171,6 @@ public class GameController : MonoBehaviour
         SteamAPI.Shutdown();
     }
 
-    #region Steam
     public void FindLobby()
     {
         SteamMatchmaking.AddRequestLobbyListDistanceFilter(ELobbyDistanceFilter.k_ELobbyDistanceFilterWorldwide);

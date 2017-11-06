@@ -1,4 +1,5 @@
 ﻿using Steamworks;
+using System.Collections.Generic;
 
 public class Player
 {
@@ -21,7 +22,7 @@ public class Lobby
         this.ID = ID;
     }
 
-    public void Update()
+    public void Update(out List<Player> playersJoined, out List<Player> playersLeft)
     {
 
     }

@@ -1,4 +1,5 @@
 ﻿using Steamworks;
+using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -17,6 +18,7 @@ public class GameController : MonoBehaviour
     }
 
     private bool steam = false;
+    public IGame game;
     public Player player = new Player();
     public Lobby lobby = new Lobby();
 
@@ -240,7 +242,11 @@ public class GameController : MonoBehaviour
         Debug.Log("Lobby updated: " + callback.m_ulSteamIDLobby);
 
         if ((ulong)lobby.ID == callback.m_ulSteamIDLobby)
-            lobby.Update();
+        {
+            List<Player> playersJoined = new List<Player>();
+            List<Player> playersLeft = new List<Player>();
+            lobby.Update(out playersJoined, out playersLeft);
+        }
     }
 
     public void SendLobbyMessage(byte[] buffer)

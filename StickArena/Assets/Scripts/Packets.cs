@@ -6,7 +6,6 @@ public class Packet
     public byte[] data;
 }
 
-[System.Serializable]
 public class PlayerState
 {
     public float timestamp;
@@ -21,4 +20,15 @@ public class PlayerState
             return new PlayerState() { timestamp = timestamp, pos = pos, cam = cam, rot = rot };
         }
     }
+}
+
+public interface IGame
+{
+    void StartGame();
+    void EndGame();
+    void OnPlayerJoined(Player player);
+    void OnPlayerLeft(Player player);
+    void OnPlayerUpdated(Player player);
+    void OnHostChanged(Player player);
+    void OnPacketReceived(Packet packet);
 }

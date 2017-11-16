@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2017
+# Visual Studio 2015
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StickArena.Plugins", "StickArena.Plugins.csproj", "{0DF37095-A6A5-92CB-FA26-B81FB9BCCF9C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StickArena", "StickArena.csproj", "{F36D44C6-7711-03C8-8B57-EE8FEF7D71DD}"

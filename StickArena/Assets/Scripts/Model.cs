@@ -22,8 +22,8 @@ public class Lobby
         this.ID = ID;
     }
 
-    public void Update(out List<Player> playersJoined, out List<Player> playersLeft)
+    /*public void Update(out List<Player> playersJoined, out List<Player> playersLeft)
     {
 
-    }
+    }*/
 }

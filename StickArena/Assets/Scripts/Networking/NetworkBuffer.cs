@@ -7,13 +7,24 @@ namespace ArcherNetwork
     public partial class NetworkBuffer
     {
         private static ByteStruct bs = new ByteStruct();
+        private List<byte> writeBuffer;
         private int index;
-        private List<byte> buffer;
+        private byte[] readBuffer;
 
         public NetworkBuffer()
         {
+            writeBuffer = new List<byte>();
+        }
+
+        public NetworkBuffer(byte[] buffer)
+        {
             index = 0;
-            buffer = new List<byte>();
+            readBuffer = buffer;
+        }
+
+        public byte[] getBytes()
+        {
+            return writeBuffer.ToArray();
         }
 
         public void ForceIndex(int index, Action action)
@@ -26,7 +37,7 @@ namespace ArcherNetwork
         
         public void Write(byte o)
         {
-            buffer.Add(o);
+            writeBuffer.Add(o);
         }
 
         public void Write(sbyte o)
@@ -230,26 +241,26 @@ namespace ArcherNetwork
 
         public byte ReadByte()
         {
-            return buffer[index++];
+            return readBuffer[index++];
         }
 
         public sbyte ReadSByte()
         {
-            return (sbyte)buffer[index++];
+            return (sbyte)ReadByte();
         }
 
         public short ReadShort()
         {
             if (BitConverter.IsLittleEndian)
             {
-                bs.b2 = buffer[index++];
-                bs.b1 = buffer[index++];
+                bs.b2 = ReadByte();
+                bs.b1 = ReadByte();
             }
 
             else
             {
-                bs.b1 = buffer[index++];
-                bs.b2 = buffer[index++];
+                bs.b1 = ReadByte();
+                bs.b2 = ReadByte();
             }
 
             return bs.s;
@@ -259,14 +270,14 @@ namespace ArcherNetwork
         {
             if (BitConverter.IsLittleEndian)
             {
-                bs.b2 = buffer[index++];
-                bs.b1 = buffer[index++];
+                bs.b2 = ReadByte();
+                bs.b1 = ReadByte();
             }
 
             else
             {
-                bs.b1 = buffer[index++];
-                bs.b2 = buffer[index++];
+                bs.b1 = ReadByte();
+                bs.b2 = ReadByte();
             }
 
             return bs.us;
@@ -276,18 +287,18 @@ namespace ArcherNetwork
         {
             if (BitConverter.IsLittleEndian)
             {
-                bs.b4 = buffer[index++];
-                bs.b3 = buffer[index++];
-                bs.b2 = buffer[index++];
-                bs.b1 = buffer[index++];
+                bs.b4 = ReadByte();
+                bs.b3 = ReadByte();
+                bs.b2 = ReadByte();
+                bs.b1 = ReadByte();
             }
 
             else
             {
-                bs.b1 = buffer[index++];
-                bs.b2 = buffer[index++];
-                bs.b3 = buffer[index++];
-                bs.b4 = buffer[index++];
+                bs.b1 = ReadByte();
+                bs.b2 = ReadByte();
+                bs.b3 = ReadByte();
+                bs.b4 = ReadByte();
             }
 
             return bs.i;
@@ -297,18 +308,18 @@ namespace ArcherNetwork
         {
             if (BitConverter.IsLittleEndian)
             {
-                bs.b4 = buffer[index++];
-                bs.b3 = buffer[index++];
-                bs.b2 = buffer[index++];
-                bs.b1 = buffer[index++];
+                bs.b4 = ReadByte();
+                bs.b3 = ReadByte();
+                bs.b2 = ReadByte();
+                bs.b1 = ReadByte();
             }
 
             else
             {
-                bs.b1 = buffer[index++];
-                bs.b2 = buffer[index++];
-                bs.b3 = buffer[index++];
-                bs.b4 = buffer[index++];
+                bs.b1 = ReadByte();
+                bs.b2 = ReadByte();
+                bs.b3 = ReadByte();
+                bs.b4 = ReadByte();
             }
 
             return bs.ui;
@@ -318,26 +329,26 @@ namespace ArcherNetwork
         {
             if (BitConverter.IsLittleEndian)
             {
-                bs.b8 = buffer[index++];
-                bs.b7 = buffer[index++];
-                bs.b6 = buffer[index++];
-                bs.b5 = buffer[index++];
-                bs.b4 = buffer[index++];
-                bs.b3 = buffer[index++];
-                bs.b2 = buffer[index++];
-                bs.b1 = buffer[index++];
+                bs.b8 = ReadByte();
+                bs.b7 = ReadByte();
+                bs.b6 = ReadByte();
+                bs.b5 = ReadByte();
+                bs.b4 = ReadByte();
+                bs.b3 = ReadByte();
+                bs.b2 = ReadByte();
+                bs.b1 = ReadByte();
             }
 
             else
             {
-                bs.b1 = buffer[index++];
-                bs.b2 = buffer[index++];
-                bs.b3 = buffer[index++];
-                bs.b4 = buffer[index++];
-                bs.b5 = buffer[index++];
-                bs.b6 = buffer[index++];
-                bs.b7 = buffer[index++];
-                bs.b8 = buffer[index++];
+                bs.b1 = ReadByte();
+                bs.b2 = ReadByte();
+                bs.b3 = ReadByte();
+                bs.b4 = ReadByte();
+                bs.b5 = ReadByte();
+                bs.b6 = ReadByte();
+                bs.b7 = ReadByte();
+                bs.b8 = ReadByte();
             }
 
             return bs.l;
@@ -347,26 +358,26 @@ namespace ArcherNetwork
         {
             if (BitConverter.IsLittleEndian)
             {
-                bs.b8 = buffer[index++];
-                bs.b7 = buffer[index++];
-                bs.b6 = buffer[index++];
-                bs.b5 = buffer[index++];
-                bs.b4 = buffer[index++];
-                bs.b3 = buffer[index++];
-                bs.b2 = buffer[index++];
-                bs.b1 = buffer[index++];
+                bs.b8 = ReadByte();
+                bs.b7 = ReadByte();
+                bs.b6 = ReadByte();
+                bs.b5 = ReadByte();
+                bs.b4 = ReadByte();
+                bs.b3 = ReadByte();
+                bs.b2 = ReadByte();
+                bs.b1 = ReadByte();
             }
 
             else
             {
-                bs.b1 = buffer[index++];
-                bs.b2 = buffer[index++];
-                bs.b3 = buffer[index++];
-                bs.b4 = buffer[index++];
-                bs.b5 = buffer[index++];
-                bs.b6 = buffer[index++];
-                bs.b7 = buffer[index++];
-                bs.b8 = buffer[index++];
+                bs.b1 = ReadByte();
+                bs.b2 = ReadByte();
+                bs.b3 = ReadByte();
+                bs.b4 = ReadByte();
+                bs.b5 = ReadByte();
+                bs.b6 = ReadByte();
+                bs.b7 = ReadByte();
+                bs.b8 = ReadByte();
             }
 
             return bs.ul;
@@ -376,18 +387,18 @@ namespace ArcherNetwork
         {
             if (BitConverter.IsLittleEndian)
             {
-                bs.b4 = buffer[index++];
-                bs.b3 = buffer[index++];
-                bs.b2 = buffer[index++];
-                bs.b1 = buffer[index++];
+                bs.b4 = ReadByte();
+                bs.b3 = ReadByte();
+                bs.b2 = ReadByte();
+                bs.b1 = ReadByte();
             }
 
             else
             {
-                bs.b1 = buffer[index++];
-                bs.b2 = buffer[index++];
-                bs.b3 = buffer[index++];
-                bs.b4 = buffer[index++];
+                bs.b1 = ReadByte();
+                bs.b2 = ReadByte();
+                bs.b3 = ReadByte();
+                bs.b4 = ReadByte();
             }
 
             return bs.f;
@@ -397,26 +408,26 @@ namespace ArcherNetwork
         {
             if (BitConverter.IsLittleEndian)
             {
-                bs.b8 = buffer[index++];
-                bs.b7 = buffer[index++];
-                bs.b6 = buffer[index++];
-                bs.b5 = buffer[index++];
-                bs.b4 = buffer[index++];
-                bs.b3 = buffer[index++];
-                bs.b2 = buffer[index++];
-                bs.b1 = buffer[index++];
+                bs.b8 = ReadByte();
+                bs.b7 = ReadByte();
+                bs.b6 = ReadByte();
+                bs.b5 = ReadByte();
+                bs.b4 = ReadByte();
+                bs.b3 = ReadByte();
+                bs.b2 = ReadByte();
+                bs.b1 = ReadByte();
             }
 
             else
             {
-                bs.b1 = buffer[index++];
-                bs.b2 = buffer[index++];
-                bs.b3 = buffer[index++];
-                bs.b4 = buffer[index++];
-                bs.b5 = buffer[index++];
-                bs.b6 = buffer[index++];
-                bs.b7 = buffer[index++];
-                bs.b8 = buffer[index++];
+                bs.b1 = ReadByte();
+                bs.b2 = ReadByte();
+                bs.b3 = ReadByte();
+                bs.b4 = ReadByte();
+                bs.b5 = ReadByte();
+                bs.b6 = ReadByte();
+                bs.b7 = ReadByte();
+                bs.b8 = ReadByte();
             }
 
             return bs.d;
@@ -424,12 +435,12 @@ namespace ArcherNetwork
 
         public bool ReadBool()
         {
-            return buffer[index++] == 1;
+            return ReadByte() == 1;
         }
 
         public char ReadChar()
         {
-            return Convert.ToChar(buffer[index++]);
+            return Convert.ToChar(ReadByte());
         }
     }
 

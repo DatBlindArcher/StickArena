@@ -36,6 +36,7 @@ public class NetworkBufferTest
         buffer.Write(bo);
         buffer.Write(c);
 
+        buffer = new NetworkBuffer(buffer.getBytes());
         Assert.AreEqual(b, buffer.ReadByte());
         Assert.AreEqual(sb, buffer.ReadSByte());
         Assert.AreEqual(s, buffer.ReadShort());
@@ -93,6 +94,7 @@ public class NetworkBufferTest
         buffer.Write(l);
         buffer.Write(overkill);
 
+        buffer = new NetworkBuffer(buffer.getBytes());
         Assert.AreEqual(s, buffer.ReadString());
         Assert.AreEqual(t, (NetworkBufferTestType)buffer.ReadEnum(typeof(NetworkBufferTestType)));
         Assert.AreEqual(o.d, ((NetworkBufferTestObject)buffer.ReadNetworkObject(typeof(NetworkBufferTestObject))).d);
@@ -114,7 +116,8 @@ public class NetworkBufferTest
         buffer.Write(v3);
         buffer.Write(v4);
         buffer.Write(q);
-
+        
+        buffer = new NetworkBuffer(buffer.getBytes());
         Assert.AreEqual(v2, buffer.ReadVector2());
         Assert.AreEqual(v3, buffer.ReadVector3());
         Assert.AreEqual(v4, buffer.ReadVector4());
@@ -129,6 +132,7 @@ public class NetworkBufferTest
         NetworkBuffer buffer = new NetworkBuffer();
         buffer.Write(id);
 
+        buffer = new NetworkBuffer(buffer.getBytes());
         Assert.AreEqual(id, buffer.ReadSteamID());
     }
 

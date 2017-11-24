@@ -1,5 +1,4 @@
 ﻿using Steamworks;
-using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -233,8 +232,8 @@ public class GameController : MonoBehaviour
     {
         Debug.Log("Lobby data updated: " + callback.m_ulSteamIDLobby);
 
-        //if ((ulong)lobby.ID == callback.m_ulSteamIDLobby)
-            //lobby.Update();
+        if ((ulong)lobby.ID == callback.m_ulSteamIDLobby)
+            lobby.Update();
     }
 
     private void OnLobbyUpdated(LobbyChatUpdate_t callback)
@@ -243,9 +242,13 @@ public class GameController : MonoBehaviour
 
         if ((ulong)lobby.ID == callback.m_ulSteamIDLobby)
         {
-            //List<Player> playersJoined = new List<Player>();
-            //List<Player> playersLeft = new List<Player>();
-            //lobby.Update(out playersJoined, out playersLeft);
+            lobby.Update((p) =>
+            { // Player p Joined
+                Debug.Log("Lobby updated: ");
+            }, (p) => 
+            { // Player p Left
+
+            });
         }
     }
 

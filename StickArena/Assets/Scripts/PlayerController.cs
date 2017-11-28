@@ -13,23 +13,38 @@ public class PlayerController : MonoBehaviour
 
     public Transform root;
     public Transform stick;
+    public Transform weapon;
 
     private PlayerState currentstate;
     private PlayerState nextstate;
+    private Animator anim;
+
+    public void SetPlayer(Player player)
+    {
+
+    }
 
     private void Start()
     {
+        anim = stick.GetComponent<Animator>();
         currentstate = nextstate = new PlayerState() { timestamp = Time.time, pos = root.position, cam = Vector3.zero };
     }
 
     private void Update()
     {
+        // Apply State
         float interpolateFactor = (Time.time - currentstate.timestamp) / Time.fixedDeltaTime;
         root.position = Vector3.LerpUnclamped(currentstate.pos, nextstate.pos, interpolateFactor);
-        stick.rotation = Quaternion.LerpUnclamped(Quaternion.Euler(0f, 0f, currentstate.rot), Quaternion.Euler(0f, 0f, nextstate.rot), interpolateFactor);
+        weapon.rotation = Quaternion.LerpUnclamped(Quaternion.Euler(0f, 0f, currentstate.rot), Quaternion.Euler(0f, 0f, nextstate.rot), interpolateFactor);
+
+        // Movement Rotation
+        stick.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(currentstate.pos.y - root.position.y, currentstate.pos.x - root.position.x) * Mathf.Rad2Deg);
+        anim.SetBool("Moving", Vector3.Distance(currentstate.pos, (Vector2)root.position) > 0f);
+
+        // Setup Between-State
         currentstate.timestamp = Time.time;
         currentstate.pos = root.position;
-        currentstate.rot = stick.rotation.eulerAngles.z;
+        currentstate.rot = weapon.rotation.eulerAngles.z;
     }
 
     private void FixedUpdate()

@@ -7,9 +7,9 @@ namespace ArcherNetwork
     public partial class NetworkBuffer
     {
         private static ByteStruct bs = new ByteStruct();
-        private List<byte> writeBuffer;
+        protected List<byte> writeBuffer;
         private int index;
-        private byte[] readBuffer;
+        protected byte[] readBuffer;
 
         public NetworkBuffer()
         {

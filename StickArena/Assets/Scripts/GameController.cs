@@ -1,10 +1,15 @@
-﻿using Steamworks;
-using System.Text;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using ArcherNetwork;
+using Steamworks;
 
-public class GameController : MonoBehaviour
+// TODO: 
+// - buffered packets
+// - make a test
+public class GameController : MonoBehaviour, ISteamController
 {
+    #region Setup
     private static GameController Instance;
     public static GameController instance
     {
@@ -14,26 +19,6 @@ public class GameController : MonoBehaviour
                 return new GameObject("GameController").AddComponent<GameController>();
             return Instance;
         }
-    }
-
-    private bool steam = false;
-    public IGame game;
-    public Player player = new Player();
-    public Lobby lobby = new Lobby();
-
-    private CallResult<LobbyEnter_t> lobbyJoin;
-    private CallResult<LobbyCreated_t> lobbyCreate;
-    private CallResult<LobbyMatchList_t> lobbyListRequest;
-    private Callback<LobbyChatMsg_t> lobbyMessage;
-    private Callback<LobbyChatUpdate_t> lobbyUpdate;
-    private Callback<LobbyDataUpdate_t> lobbyDataUpdate;
-    private Callback<P2PSessionRequest_t> P2PSessionRequest;
-    private Callback<P2PSessionConnectFail_t> P2PSessionConnectFail;
-
-    private void Update()
-    {
-        if (steam)
-            SteamAPI.RunCallbacks();
     }
 
     private void Awake()
@@ -46,87 +31,13 @@ public class GameController : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
-        InitSteam();
-    }
-
-    public void StartGame()
-    {
-        SceneManager.LoadScene("Arena");
-    }
-
-    #region Steam
-    private void InitSteam()
-    {
-        if (steam)
-        {
-            throw new System.Exception("Tried to Initialize the SteamAPI twice in one session!");
-        }
-
-        if (!Packsize.Test())
-        {
-            Debug.LogError("[Steamworks.NET] Packsize Test returned false, the wrong version of Steamworks.NET is being run in this platform.", this);
-        }
-
-        if (!DllCheck.Test())
-        {
-            Debug.LogError("[Steamworks.NET] DllCheck Test returned false, One or more of the Steamworks binaries seems to be the wrong version.", this);
-        }
-
-        try
-        {
-            if (SteamAPI.RestartAppIfNecessary(AppId_t.Invalid))
-            {
-                Application.Quit();
-                return;
-            }
-        }
-
-        catch (System.DllNotFoundException e)
-        {
-            Debug.LogError("[Steamworks.NET] Could not load [lib]steam_api.dll/so/dylib. It's likely not in the correct location. Refer to the README for more details.\n" + e, this);
-            Application.Quit();
-            return;
-        }
-        
-        steam = SteamAPI.Init();
-
-        if (!steam)
-        {
-            Debug.LogError("[Steamworks.NET] SteamAPI_Init() failed. Refer to Valve's documentation or the comment above this line for more information.", this);
-            return;
-        }
-
-        player = new Player(SteamUser.GetSteamID());
-        lobbyJoin = CallResult<LobbyEnter_t>.Create(OnLobbyJoined);
-        lobbyCreate = CallResult<LobbyCreated_t>.Create(OnLobbyCreated);
-        lobbyListRequest = CallResult<LobbyMatchList_t>.Create(OnLobbyList);
-        lobbyMessage = Callback<LobbyChatMsg_t>.Create(OnLobbyMessage);
-        lobbyUpdate = Callback<LobbyChatUpdate_t>.Create(OnLobbyUpdated);
-        lobbyDataUpdate = Callback<LobbyDataUpdate_t>.Create(OnLobbyDataUpdated);
-        P2PSessionRequest = Callback<P2PSessionRequest_t>.Create(OnP2PSessionRequest);
-        P2PSessionConnectFail = Callback<P2PSessionConnectFail_t>.Create(OnP2PSessionConnectFail);
-        Debug.Log("Steam is initialized.");
-    }
-
-    private SteamAPIWarningMessageHook_t m_SteamAPIWarningMessageHook;
-    private static void SteamAPIDebugTextHook(int nSeverity, StringBuilder pchDebugText)
-    {
-        Debug.LogWarning(pchDebugText);
+        steam = Steam.Initialize(this);
     }
 
     private void OnEnable()
     {
         if (Instance == null)
             Instance = this;
-
-        if (!steam)
-            return;
-
-        if (m_SteamAPIWarningMessageHook == null)
-        {
-            m_SteamAPIWarningMessageHook = new SteamAPIWarningMessageHook_t(SteamAPIDebugTextHook);
-            SteamClient.SetWarningMessageHook(m_SteamAPIWarningMessageHook);
-        }
     }
 
     private void OnDestroy()
@@ -135,164 +46,177 @@ public class GameController : MonoBehaviour
             return;
 
         Instance = null;
+    }
+    #endregion
 
-        if (!steam)
-            return;
+    public Game game;
+    public Steam steam;
+    public Player player;
+    public Lobby lobby;
 
-        if (lobby.ID.IsValid())
-            LeaveLobby();
-
-        SteamAPI.Shutdown();
+    public void StartGame(GameInfo info)
+    {
+        StartCoroutine(LoadScene(info));
     }
 
-    public void FindLobby()
+    private IEnumerator LoadScene(GameInfo info)
     {
-        SteamMatchmaking.AddRequestLobbyListDistanceFilter(ELobbyDistanceFilter.k_ELobbyDistanceFilterWorldwide);
-        SteamMatchmaking.AddRequestLobbyListStringFilter("Game", "StickArena", ELobbyComparison.k_ELobbyComparisonEqual);
-        lobbyListRequest.Set(SteamMatchmaking.RequestLobbyList());
-        Debug.Log("Looking for lobbies");
-    }
+        SceneManager.LoadScene("LoadingScene");
+        LoadingScreen loading = GameObject.Find("UI").GetComponent<LoadingScreen>();
+        DontDestroyOnLoad(loading.gameObject);
+        AsyncOperation a = SceneManager.LoadSceneAsync(info.map.ToString());
 
-    public void JoinLobby(CSteamID lobbyID)
-    {
-        lobbyJoin.Set(SteamMatchmaking.JoinLobby(lobbyID));
-    }
-
-    public void CreateLobby()
-    {
-        lobbyCreate.Set(SteamMatchmaking.CreateLobby(ELobbyType.k_ELobbyTypePublic, 4));
-    }
-
-    public void LeaveLobby()
-    {
-        if (lobby.ID.IsValid())
+        while (a.progress < 1f)
         {
-            SteamMatchmaking.LeaveLobby(lobby.ID);
-            lobby = new Lobby();
-            Debug.Log("Left lobby.");
-        }
-    }
-
-    private void OnLobbyList(LobbyMatchList_t callback, bool failed)
-    {
-        if (failed)
-        {
-            Debug.LogError("Requesting lobbylist failed.");
-            return;
+            loading.progress.text = a.progress.ToString("F");
+            yield return new WaitForEndOfFrame();
         }
 
-        Debug.Log("Current Lobbies: " + callback.m_nLobbiesMatching);
+        yield return a;
+        
+        Game game = FindObjectOfType<Game>();
+        game.Initialize(info);
 
-        for (int i = 0; i < callback.m_nLobbiesMatching; i++)
+        foreach (Player player in lobby.players.Values)
+            game.OnPlayerJoined(player);
+
+        DestroyImmediate(loading.gameObject);
+    }
+
+    public void SendPacket(SendType sendType, NetworkTarget target, NetworkBuffer buffer)
+    {
+        SendPacket(sendType, target, player.ID, CSteamID.Nil, buffer);
+    }
+
+    public void SendPacket(SendType sendType, CSteamID receiver, NetworkBuffer buffer)
+    {
+        SendPacket(sendType, NetworkTarget.Single, player.ID, receiver, buffer);
+    }
+
+    private void SendPacket(SendType sendType, NetworkTarget target, CSteamID sender, CSteamID receiver, NetworkBuffer buffer)
+    {
+        byte[] bytes = buffer.getBytes();
+        EP2PSend sendtype = sendType == SendType.FastButReliable ? EP2PSend.k_EP2PSendReliable : EP2PSend.k_EP2PSendUnreliableNoDelay;
+
+        NetworkBuffer finalBuffer = new NetworkBuffer();
+        finalBuffer.Write(sendType);
+        finalBuffer.Write(target);
+        finalBuffer.Write(sender);
+        finalBuffer.Write(receiver);
+        finalBuffer.Write(bytes);
+        byte[] data = finalBuffer.getBytes();
+
+        if (lobby.isHost)
         {
-            CSteamID lobbyListID = SteamMatchmaking.GetLobbyByIndex(i);
-
-            if (lobbyListID.IsValid())
+            switch (target)
             {
-                JoinLobby(lobbyListID);
-                return;
+                case NetworkTarget.All:
+                case NetworkTarget.Buffered:
+                    foreach (CSteamID player in lobby.players.Keys)
+                        if (player != lobby.host.ID)
+                            steam.Send(player, data, sendtype);
+                    if (player.ID == sender)
+                        OnPacket(data);
+                    break;
+
+                case NetworkTarget.Host:
+                    OnPacket(data);
+                    break;
+
+                case NetworkTarget.Single:
+                    if (receiver == lobby.host.ID)
+                        OnPacket(data);
+                    else
+                        steam.Send(receiver, data, sendtype);
+                    break;
             }
         }
 
-        CreateLobby();
-    }
-
-    private void OnLobbyJoined(LobbyEnter_t callback, bool failed)
-    {
-        if (failed)
+        else
         {
-            Debug.LogError("Joining lobby failed.");
-            return;
-        }
-
-        Debug.Log("Lobby Joined: " + callback.m_ulSteamIDLobby);
-        lobby = new Lobby((CSteamID)callback.m_ulSteamIDLobby);
-    }
-
-    private void OnLobbyCreated(LobbyCreated_t callback, bool failed)
-    {
-        if (failed)
-        {
-            Debug.LogError("Creating lobby failed.");
-            return;
-        }
-
-        if (!SteamMatchmaking.RequestLobbyData((CSteamID)callback.m_ulSteamIDLobby))
-        {
-            Debug.LogError("Failed to retrieve lobby data.");
-        }
-
-        lobby.ID = (CSteamID)callback.m_ulSteamIDLobby;
-        //SteamMatchmaking.SetLobbyData((CSteamID)callback.m_ulSteamIDLobby, "Title", lobby.name);
-        SteamMatchmaking.SetLobbyData((CSteamID)callback.m_ulSteamIDLobby, "Game", "StickArena");
-        Debug.Log("Lobby created: " + callback.m_ulSteamIDLobby);
-    }
-
-    private void OnLobbyDataUpdated(LobbyDataUpdate_t callback)
-    {
-        Debug.Log("Lobby data updated: " + callback.m_ulSteamIDLobby);
-
-        if ((ulong)lobby.ID == callback.m_ulSteamIDLobby)
-            lobby.Update();
-    }
-
-    private void OnLobbyUpdated(LobbyChatUpdate_t callback)
-    {
-        Debug.Log("Lobby updated: " + callback.m_ulSteamIDLobby);
-
-        if ((ulong)lobby.ID == callback.m_ulSteamIDLobby)
-        {
-            lobby.Update((p) =>
-            { // Player p Joined
-                Debug.Log("Lobby updated: ");
-            }, (p) => 
-            { // Player p Left
-
-            });
+            steam.Send(lobby.host.ID, data, sendtype);
         }
     }
 
-    public void SendLobbyMessage(byte[] buffer)
+    public void OnPacket(byte[] data)
     {
-        if (!SteamMatchmaking.SendLobbyChatMsg(lobby.ID, buffer, buffer.Length))
+        NetworkBuffer firstBuffer = new NetworkBuffer(data);
+        SendType sendType = (SendType)firstBuffer.ReadEnum(typeof(SendType));
+        NetworkTarget target = (NetworkTarget)firstBuffer.ReadEnum(typeof(NetworkTarget));
+        CSteamID sender = firstBuffer.ReadSteamID();
+        CSteamID receiver = firstBuffer.ReadSteamID();
+        byte[] bytes = (byte[])firstBuffer.ReadList(typeof(byte[]));
+        NetworkBuffer buffer = new NetworkBuffer(bytes);
+
+        if (target == NetworkTarget.Buffered)
         {
-            Debug.LogError("Failed to send message.");
+            // buffer it
+        }
+
+        if (lobby.isHost)
+        {
+            switch (target)
+            {
+                case NetworkTarget.Buffered:
+                case NetworkTarget.All:
+                    game.OnPacketReceived(lobby.players[sender], buffer);
+                    if (player.ID != sender) SendPacket(sendType, target, sender, receiver, buffer);
+                    break;
+
+                case NetworkTarget.Host:
+                    game.OnPacketReceived(lobby.players[sender], buffer);
+                    break;
+
+                case NetworkTarget.Single:
+                    if (player.ID == receiver) game.OnPacketReceived(lobby.players[sender], buffer);
+                    else SendPacket(sendType, target, sender, receiver, buffer);
+                    break;
+            }
+        }
+
+        else
+        {
+            game.OnPacketReceived(lobby.players[sender], buffer);
         }
     }
 
-    private void OnLobbyMessage(LobbyChatMsg_t callback)
+    public void OnSteamInitialized(Player player)
     {
-        CSteamID sender;
-        byte[] buffer = new byte[1024];
-        EChatEntryType type;
-        int length = SteamMatchmaking.GetLobbyChatEntry((CSteamID)callback.m_ulSteamIDLobby, (int)callback.m_iChatID, out sender, buffer, 1024, out type);
-        byte[] result = new byte[length];
-        System.Array.Copy(buffer, result, length);
+        this.player = player;
+        Debug.Log("Steam initialized");
     }
 
-    private void OnP2PSessionRequest(P2PSessionRequest_t callback)
+    public void OnLobbyJoined(Lobby lobby)
     {
-        Debug.Log("OnP2PSesssionRequest Called steamIDRemote: " + callback.m_steamIDRemote);
-
-        if (!SteamNetworking.AcceptP2PSessionWithUser(callback.m_steamIDRemote))
-        {
-            Debug.Log("OnP2PSesssionRequest Invalid steamIDRemote: " + callback.m_steamIDRemote);
-        }
+        this.lobby = lobby;
+        Debug.Log("Lobby joined");
     }
 
-    private void OnP2PSessionConnectFail(P2PSessionConnectFail_t callback)
+    public void OnLobbyCreated(Lobby lobby)
     {
-        Debug.Log("OnP2PSessionConnectFail Called steamIDRemote: " + callback.m_steamIDRemote);
+        this.lobby = lobby;
+        Debug.Log("Lobby created");
     }
 
-    private void Ignore()
+    public void OnLobbyUpdated()
     {
-        lobbyListRequest.ToString();
-        lobbyMessage.ToString();
-        lobbyUpdate.ToString();
-        lobbyDataUpdate.ToString();
-        P2PSessionRequest.ToString();
-        P2PSessionConnectFail.ToString();
+        Debug.Log("Lobby updated");
     }
-    #endregion
+
+    public void OnPlayerJoined(Player player)
+    {
+        if (game != null) game.OnPlayerJoined(player);
+        Debug.Log("Player " + player.name + " has joined.");
+    }
+
+    public void OnPlayerLeft(Player player)
+    {
+        if (game != null) game.OnPlayerLeft(player);
+        Debug.Log("Player " + player.name + " has left.");
+    }
+
+    public void OnLobbyMessage(byte[] buffer)
+    {
+        Debug.Log("Lobby message received.");
+    }
 }

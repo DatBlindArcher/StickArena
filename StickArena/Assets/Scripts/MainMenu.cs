@@ -23,7 +23,7 @@ public class MainMenu : MonoBehaviour
 
     public void JoinLobby()
     {
-        GameController.instance.FindLobby();
+        GameController.instance.steam.FindLobby();
     }
 
     public void ShowCredits()

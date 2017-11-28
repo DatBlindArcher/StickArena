@@ -226,7 +226,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\BallMover.cs" />
+    <Compile Include="Assets\Scripts\Game.cs" />
     <Compile Include="Assets\Scripts\GameController.cs" />
+    <Compile Include="Assets\Scripts\LoadingScreen.cs" />
     <Compile Include="Assets\Scripts\MainMenu.cs" />
     <Compile Include="Assets\Scripts\Model.cs" />
     <Compile Include="Assets\Scripts\Networking\CustomNetworkBuffer.cs" />
@@ -235,6 +237,7 @@
     <Compile Include="Assets\Scripts\Networking\UnityNetworkBuffer.cs" />
     <Compile Include="Assets\Scripts\Packets.cs" />
     <Compile Include="Assets\Scripts\PlayerController.cs" />
+    <Compile Include="Assets\Scripts\Steam.cs" />
     <Compile Include="Assets\Scripts\Weapon.cs" />
   </ItemGroup>
   <ItemGroup>

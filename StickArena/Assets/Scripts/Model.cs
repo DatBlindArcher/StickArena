@@ -1,6 +1,35 @@
-﻿using Steamworks;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Steamworks;
+using ArcherNetwork;
+
+public enum GameMode
+{
+    DeathMatch
+}
+
+public enum GameMap
+{
+    TestArena
+}
+
+public class GameInfo : INetworkObject
+{
+    public GameMode mode;
+    public GameMap map;
+
+    public void Serialize(NetworkBuffer buffer)
+    {
+        buffer.Write(mode);
+        buffer.Write(map);
+    }
+
+    public void Deserialize(NetworkBuffer buffer)
+    {
+        mode = (GameMode)buffer.ReadEnum(typeof(GameMode));
+        map = (GameMap)buffer.ReadEnum(typeof(GameMap));
+    }
+}
 
 public class Player
 {
@@ -29,6 +58,14 @@ public class Lobby
     public Player host;
     public Dictionary<CSteamID, Player> players;
 
+    public bool isHost
+    {
+        get
+        {
+            return host.ID == GameController.instance.player.ID;
+        }
+    }
+
     public Lobby() : this(CSteamID.Nil) { }
     public Lobby(CSteamID ID)
     {
@@ -37,26 +74,49 @@ public class Lobby
         Update();
     }
 
-    public void Update() { Update(null, null); }
+    public void Update() { Update((p) => { }, (p) => { }); }
     public void Update(Action<Player> playerJoined, Action<Player> playerLeft)
     {
         name = SteamMatchmaking.GetLobbyData(ID, "Title");
         int playerCount = SteamMatchmaking.GetNumLobbyMembers(ID);
         maxPlayers = SteamMatchmaking.GetLobbyMemberLimit(ID);
+        HashSet<CSteamID> playersToUpdate = new HashSet<CSteamID>();
 
         for (int i = 0; i < playerCount; i++)
         {
-            CSteamID playerID = SteamMatchmaking.GetLobbyMemberByIndex(ID, i);
-            if (!players.ContainsKey(ID))
+            playersToUpdate.Add(SteamMatchmaking.GetLobbyMemberByIndex(ID, i));
+        }
+
+        foreach (CSteamID id in players.Keys)
+        {
+            if (!playersToUpdate.Contains(id))
             {
-                Player p = new Player(playerID);
-                players.Add(playerID, p);
-                playerJoined(p);
+                playerLeft(players[id]);
+                players.Remove(id);
+            }
+
+            else
+            {
+                players[id].Update();
+                playersToUpdate.Remove(id);
             }
         }
 
-        // Check if dictionary has more players than the amount
+        foreach (CSteamID id in playersToUpdate)
+        {
+            players.Add(id, new Player(id));
+            playerJoined(players[id]);
+        }
 
-        host = players[ID];
+        playersToUpdate.Clear();
+        host = players[SteamMatchmaking.GetLobbyOwner(ID)];
+    }
+
+    public void Leave()
+    {
+        if (ID.IsValid())
+        {
+            SteamMatchmaking.LeaveLobby(ID);
+        }
     }
 }

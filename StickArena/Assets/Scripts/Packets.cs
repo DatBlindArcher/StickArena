@@ -1,12 +1,21 @@
-﻿using UnityEngine;
+﻿using ArcherNetwork;
+using UnityEngine;
 
-public class Packet
+public enum NetworkTarget : byte
 {
-    public byte type;
-    public byte[] data;
+    All = 0,
+    Host = 1,
+    Single = 2,
+    Buffered = 3
 }
 
-public class PlayerState
+public enum SendType : byte
+{
+    FastButReliable,
+    SlowButUnreliable
+}
+
+public class PlayerState : INetworkObject
 {
     public float timestamp;
     public Vector2 pos;
@@ -20,15 +29,20 @@ public class PlayerState
             return new PlayerState() { timestamp = timestamp, pos = pos, cam = cam, rot = rot };
         }
     }
-}
 
-public interface IGame
-{
-    void StartGame();
-    void EndGame();
-    void OnPlayerJoined(Player player);
-    void OnPlayerLeft(Player player);
-    void OnPlayerUpdated(Player player);
-    void OnHostChanged(Player player);
-    void OnPacketReceived(Packet packet);
+    public void Serialize(NetworkBuffer buffer)
+    {
+        buffer.Write(timestamp);
+        buffer.Write(pos);
+        buffer.Write(cam);
+        buffer.Write(rot);
+    }
+
+    public void Deserialize(NetworkBuffer buffer)
+    {
+        timestamp = buffer.ReadFloat();
+        pos = buffer.ReadVector2();
+        cam = buffer.ReadVector2();
+        rot = buffer.ReadFloat();
+    }
 }

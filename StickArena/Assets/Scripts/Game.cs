@@ -15,6 +15,7 @@ public class Game : MonoBehaviour
     {
         this.gameInfo = gameInfo;
         Debug.Log(this.gameInfo.mode.ToString());
+        players = new Dictionary<CSteamID, PlayerController>();
     }
 
     public void OnPlayerJoined(Player player)

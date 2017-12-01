@@ -53,33 +53,14 @@ public class MainMenu : MonoBehaviour
         sliderText.text = slider.value.ToString();
     }
 
-
-
-
-
-
-
-    /*private void OnGUI()
+    private void OnGUI()
     {
-        if (!GameController.instance.lobby.ID.IsValid())
-        {
-            if (GUILayout.Button("Get Lobby"))
-            {
-                GameController.instance.FindLobby();
-            }
-        }
-
-        else
+        if (GameController.instance.lobby != null && GameController.instance.lobby.ID.IsValid())
         {
             if (GUILayout.Button("Start Game"))
             {
-                GameController.instance.StartGame();
-            }
-
-            if (GUILayout.Button("Leave Lobby"))
-            {
-                GameController.instance.LeaveLobby();
+                GameController.instance.StartGame(new GameInfo() { map = GameMap.Arena, mode = GameMode.DeathMatch });
             }
         }
-    }*/
+    }
 }

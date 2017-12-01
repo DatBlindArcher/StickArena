@@ -61,14 +61,15 @@ public class GameController : MonoBehaviour, ISteamController
 
     private IEnumerator LoadScene(GameInfo info)
     {
-        SceneManager.LoadScene("LoadingScene");
-        LoadingScreen loading = GameObject.Find("UI").GetComponent<LoadingScreen>();
+        AsyncOperation a = SceneManager.LoadSceneAsync("LoadingScene", LoadSceneMode.Single);
+        yield return a;
+        LoadingScreen loading = FindObjectOfType<LoadingScreen>();
         DontDestroyOnLoad(loading.gameObject);
-        AsyncOperation a = SceneManager.LoadSceneAsync(info.map.ToString());
+        a = SceneManager.LoadSceneAsync(info.map.ToString(), LoadSceneMode.Single);
 
         while (a.progress < 1f)
         {
-            loading.progress.text = a.progress.ToString("F");
+            loading.progress.text = "Loading " + a.progress.ToString("F") + "%";
             yield return new WaitForEndOfFrame();
         }
 

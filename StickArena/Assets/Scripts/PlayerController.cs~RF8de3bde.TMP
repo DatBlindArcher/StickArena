@@ -69,7 +69,7 @@ public class PlayerController : MonoBehaviour
 
         if (Mathf.Abs(movement.x) > 0f)
         {
-            hit = Physics2D.CircleCast(nextstate.pos + new Vector2(movement.x, 0f) * raycastDistance, raycastRadius, new Vector2(movement.x, 0f), movement.x);
+            hit = Physics2D.CircleCast(nextstate.pos, raycastRadius, new Vector2(movement.x, 0f), movement.x + raycastDistance);
 
             if (hit.transform != null)
             {
@@ -79,7 +79,7 @@ public class PlayerController : MonoBehaviour
 
         if (Mathf.Abs(movement.y) > 0f)
         {
-            hit = Physics2D.CircleCast(nextstate.pos + new Vector2(0f, movement.y) * raycastDistance, raycastRadius, new Vector2(0f, movement.y), movement.y);
+            hit = Physics2D.CircleCast(nextstate.pos, raycastRadius, new Vector2(0f, movement.y), movement.y + raycastDistance);
 
             if (hit.transform != null)
             {

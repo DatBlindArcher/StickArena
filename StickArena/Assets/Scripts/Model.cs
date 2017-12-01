@@ -10,7 +10,7 @@ public enum GameMode
 
 public enum GameMap
 {
-    TestArena
+    Arena
 }
 
 public class GameInfo : INetworkObject

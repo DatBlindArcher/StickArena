@@ -92,6 +92,12 @@ public class Steam : MonoBehaviour
             return;
         }
 
+        if (m_SteamAPIWarningMessageHook == null)
+        {
+            m_SteamAPIWarningMessageHook = new SteamAPIWarningMessageHook_t(SteamAPIDebugTextHook);
+            SteamClient.SetWarningMessageHook(m_SteamAPIWarningMessageHook);
+        }
+
         lobbyJoin = CallResult<LobbyEnter_t>.Create(OnLobbyJoined);
         lobbyCreate = CallResult<LobbyCreated_t>.Create(OnLobbyCreated);
         lobbyListRequest = CallResult<LobbyMatchList_t>.Create(OnLobbyList);
@@ -114,21 +120,12 @@ public class Steam : MonoBehaviour
             SteamAPI.RunCallbacks();
     }
 
-    private void OnEnable()
-    {
-        if (m_SteamAPIWarningMessageHook == null)
-        {
-            m_SteamAPIWarningMessageHook = new SteamAPIWarningMessageHook_t(SteamAPIDebugTextHook);
-            SteamClient.SetWarningMessageHook(m_SteamAPIWarningMessageHook);
-        }
-    }
-
     private void OnDestroy()
     {
         if (!running)
             return;
 
-        if (lobby.ID.IsValid())
+        if (lobby != null && lobby.ID.IsValid())
         {
             lobby.Leave();
             lobby = null;
@@ -189,8 +186,9 @@ public class Steam : MonoBehaviour
             Debug.LogError("Joining lobby failed.");
             return;
         }
-        
-        controller.OnLobbyJoined(new Lobby((CSteamID)callback.m_ulSteamIDLobby));
+
+        lobby = new Lobby((CSteamID)callback.m_ulSteamIDLobby);
+        controller.OnLobbyJoined(lobby);
     }
 
     private void OnLobbyCreated(LobbyCreated_t callback, bool failed)
@@ -209,7 +207,8 @@ public class Steam : MonoBehaviour
         CSteamID ID = (CSteamID)callback.m_ulSteamIDLobby;
         //SteamMatchmaking.SetLobbyData((CSteamID)callback.m_ulSteamIDLobby, "Title", lobby.name);
         SteamMatchmaking.SetLobbyData(ID, "Game", "StickArena");
-        controller.OnLobbyCreated(new Lobby(ID));
+        lobby = new Lobby(ID);
+        controller.OnLobbyCreated(lobby);
     }
 
     private void OnLobbyDataUpdated(LobbyDataUpdate_t callback)

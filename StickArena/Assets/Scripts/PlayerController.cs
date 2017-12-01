@@ -1,5 +1,7 @@
-﻿using UnityEngine;
+﻿using ArcherNetwork;
+using UnityEngine;
 
+// Disable camera if not mine
 public class PlayerController : MonoBehaviour
 {
     public float speed;
@@ -20,12 +22,19 @@ public class PlayerController : MonoBehaviour
     private PlayerState currentstate;
     private PlayerState nextstate;
     private Animator anim;
+    private Player player;
 
-    public Transform rayVisualizer;
+    public bool isMine
+    {
+        get
+        {
+            return player.ID == GameController.instance.player.ID;
+        }
+    }
 
     public void SetPlayer(Player player)
     {
-
+        this.player = player;
     }
 
     private void Start()
@@ -51,8 +60,16 @@ public class PlayerController : MonoBehaviour
         currentstate.rot = weapon.rotation.eulerAngles.z;
     }
 
+    public void ReceiveState(PlayerState state)
+    {
+        currentstate = nextstate.copy;
+        nextstate = state;
+    }
+
     private void FixedUpdate()
     {
+        if (!isMine) return;
+
         float currentSpeed = speed;
         currentstate = nextstate.copy;
         Vector2 pos = nextstate.pos;
@@ -94,5 +111,10 @@ public class PlayerController : MonoBehaviour
         float mouseX = mouse.x - Screen.width / 2f;
         float mouseY = mouse.y - Screen.height / 2f;
         nextstate.rot = Mathf.Atan2(mouseY, mouseX) * Mathf.Rad2Deg - 90f;
+
+        NetworkBuffer buffer = new NetworkBuffer();
+        buffer.Write(PacketType.State);
+        buffer.Write(nextstate);
+        GameController.instance.SendPacket(SendType.SlowButReliable, NetworkTarget.Others, buffer);
     }
 }

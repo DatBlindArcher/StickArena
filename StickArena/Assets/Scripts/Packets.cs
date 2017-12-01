@@ -4,16 +4,23 @@ using UnityEngine;
 public enum NetworkTarget : byte
 {
     All = 0,
-    Host = 1,
-    Single = 2,
-    Buffered = 3
+    Others = 1,
+    Host = 2,
+    Single = 3,
+    Buffered = 4
 }
 
 public enum SendType : byte
 {
-    FastButReliable,
-    SlowButUnreliable
+    SlowButReliable,
+    FastButUnreliable
 }
+
+public enum PacketType : byte
+{
+    State = 0
+}
+
 
 public class PlayerState : INetworkObject
 {

@@ -1,12 +1,12 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using ArcherNetwork;
 using Steamworks;
 
 // TODO: 
-// - buffered packets
-// - make a test
+// - buffered packets must be sent to new players
 public class GameController : MonoBehaviour, ISteamController
 {
     #region Setup
@@ -54,6 +54,13 @@ public class GameController : MonoBehaviour, ISteamController
     public Player player;
     public Lobby lobby;
 
+    private List<byte[]> bufferPackets;
+
+    private void Start()
+    {
+        bufferPackets = new List<byte[]>();
+    }
+
     public void StartGame(GameInfo info)
     {
         StartCoroutine(LoadScene(info));
@@ -97,9 +104,10 @@ public class GameController : MonoBehaviour, ISteamController
     private void SendPacket(SendType sendType, NetworkTarget target, CSteamID sender, CSteamID receiver, NetworkBuffer buffer)
     {
         byte[] bytes = buffer.getBytes();
-        EP2PSend sendtype = sendType == SendType.FastButReliable ? EP2PSend.k_EP2PSendReliable : EP2PSend.k_EP2PSendUnreliableNoDelay;
+        EP2PSend sendtype = sendType == SendType.SlowButReliable ? EP2PSend.k_EP2PSendReliable : EP2PSend.k_EP2PSendUnreliableNoDelay;
 
         NetworkBuffer finalBuffer = new NetworkBuffer();
+        finalBuffer.Write(lobby.isHost);
         finalBuffer.Write(sendType);
         finalBuffer.Write(target);
         finalBuffer.Write(sender);
@@ -114,10 +122,16 @@ public class GameController : MonoBehaviour, ISteamController
                 case NetworkTarget.All:
                 case NetworkTarget.Buffered:
                     foreach (CSteamID player in lobby.players.Keys)
-                        if (player != lobby.host.ID)
+                        if (player != this.player.ID)
                             steam.Send(player, data, sendtype);
-                    if (player.ID == sender)
-                        OnPacket(data);
+                    OnPacket(data);
+                    break;
+
+                case NetworkTarget.Others:
+                    foreach (CSteamID player in lobby.players.Keys)
+                        if (player != this.player.ID && player != sender)
+                            steam.Send(player, data, sendtype);
+                    OnPacket(data);
                     break;
 
                 case NetworkTarget.Host:
@@ -142,6 +156,7 @@ public class GameController : MonoBehaviour, ISteamController
     public void OnPacket(byte[] data)
     {
         NetworkBuffer firstBuffer = new NetworkBuffer(data);
+        bool fromHost = firstBuffer.ReadBool();
         SendType sendType = (SendType)firstBuffer.ReadEnum(typeof(SendType));
         NetworkTarget target = (NetworkTarget)firstBuffer.ReadEnum(typeof(NetworkTarget));
         CSteamID sender = firstBuffer.ReadSteamID();
@@ -151,33 +166,36 @@ public class GameController : MonoBehaviour, ISteamController
 
         if (target == NetworkTarget.Buffered)
         {
-            // buffer it
+            bufferPackets.Add(data);
         }
 
-        if (lobby.isHost)
+        if (!fromHost)
         {
             switch (target)
             {
-                case NetworkTarget.Buffered:
-                case NetworkTarget.All:
-                    game.OnPacketReceived(lobby.players[sender], buffer);
-                    if (player.ID != sender) SendPacket(sendType, target, sender, receiver, buffer);
-                    break;
-
-                case NetworkTarget.Host:
-                    game.OnPacketReceived(lobby.players[sender], buffer);
-                    break;
-
                 case NetworkTarget.Single:
-                    if (player.ID == receiver) game.OnPacketReceived(lobby.players[sender], buffer);
-                    else SendPacket(sendType, target, sender, receiver, buffer);
+                    if (player.ID != receiver) SendPacket(sendType, target, sender, receiver, buffer);
+                    break;
+
+                default:
+                    SendPacket(sendType, target, sender, receiver, buffer);
                     break;
             }
         }
 
-        else
+        if (game != null)
         {
-            game.OnPacketReceived(lobby.players[sender], buffer);
+            switch (target)
+            {
+                default:
+                    game.OnPacketReceived(lobby.players[sender], buffer);
+                    break;
+
+                case NetworkTarget.Single:
+                    if (player.ID == receiver)
+                        game.OnPacketReceived(lobby.players[sender], buffer);
+                    break;
+            }
         }
     }
 

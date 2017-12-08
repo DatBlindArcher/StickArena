@@ -56,6 +56,21 @@ public class GameController : MonoBehaviour, ISteamController
 
     private List<byte[]> bufferPackets;
 
+    public GameState getState
+    {
+        get
+        {
+            if (lobby != null && lobby.ID.IsValid())
+            {
+                if (game != null)
+                    return GameState.Game;
+                return GameState.Lobby;
+            }
+
+            return GameState.Menu;
+        }
+    }
+
     private void Start()
     {
         bufferPackets = new List<byte[]>();
@@ -63,7 +78,13 @@ public class GameController : MonoBehaviour, ISteamController
 
     public void StartGame(GameInfo info)
     {
-        StartCoroutine(LoadScene(info));
+        if (lobby.isHost)
+        {
+            NetworkBuffer buffer = new NetworkBuffer();
+            buffer.Write(PacketType.StartGame);
+            buffer.Write(info);
+            steam.SendLobbyMessage(buffer.getBytes());
+        }
     }
 
     private IEnumerator LoadScene(GameInfo info)
@@ -236,6 +257,18 @@ public class GameController : MonoBehaviour, ISteamController
 
     public void OnLobbyMessage(byte[] buffer)
     {
-        Debug.Log("Lobby message received.");
+        NetworkBuffer nbuffer = new NetworkBuffer(buffer);
+        PacketType type = (PacketType)nbuffer.ReadEnum(typeof(PacketType));
+
+        switch (type)
+        {
+            case PacketType.StartGame:
+                StartCoroutine(LoadScene((GameInfo)nbuffer.ReadNetworkObject(typeof(GameInfo))));
+                break;
+
+            default:
+                Debug.Log("Lobby message received.");
+                break;
+        }
     }
 }

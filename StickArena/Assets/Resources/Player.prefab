@@ -261,6 +261,7 @@ MonoBehaviour:
   root: {fileID: 4696947609725380}
   stick: {fileID: 4910442676778890}
   weapon: {fileID: 4786413254620240}
+  cam: {fileID: 1950469554368754}
 --- !u!114 &114944832357957624
 MonoBehaviour:
   m_ObjectHideFlags: 1

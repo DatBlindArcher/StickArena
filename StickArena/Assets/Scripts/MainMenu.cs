@@ -57,6 +57,11 @@ public class MainMenu : MonoBehaviour
     {
         if (GameController.instance.lobby != null && GameController.instance.lobby.ID.IsValid())
         {
+            foreach (Player player in GameController.instance.lobby.players.Values)
+            {
+                GUILayout.TextArea(player.name);
+            }
+
             if (GUILayout.Button("Start Game"))
             {
                 GameController.instance.StartGame(new GameInfo() { map = GameMap.Arena, mode = GameMode.DeathMatch });

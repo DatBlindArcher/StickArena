@@ -3,6 +3,13 @@ using System.Collections.Generic;
 using Steamworks;
 using ArcherNetwork;
 
+public enum GameState
+{
+    Menu,
+    Lobby,
+    Game
+}
+
 public enum GameMode
 {
     DeathMatch

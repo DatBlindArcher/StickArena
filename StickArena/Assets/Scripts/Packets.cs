@@ -18,7 +18,9 @@ public enum SendType : byte
 
 public enum PacketType : byte
 {
-    State = 0
+    State = 0,
+
+    StartGame = 100
 }
 
 

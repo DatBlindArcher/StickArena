@@ -18,6 +18,7 @@ public class PlayerController : MonoBehaviour
     public Transform root;
     public Transform stick;
     public Transform weapon;
+    public GameObject cam;
 
     private PlayerState currentstate;
     private PlayerState nextstate;
@@ -35,6 +36,9 @@ public class PlayerController : MonoBehaviour
     public void SetPlayer(Player player)
     {
         this.player = player;
+
+        if (!isMine)
+            Destroy(cam);
     }
 
     private void Start()

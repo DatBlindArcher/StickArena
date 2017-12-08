@@ -66,6 +66,7 @@ public class PlayerController : MonoBehaviour
 
     public void ReceiveState(PlayerState state)
     {
+        if (isMine) return;
         currentstate = nextstate.copy;
         nextstate = state;
     }
@@ -119,6 +120,6 @@ public class PlayerController : MonoBehaviour
         NetworkBuffer buffer = new NetworkBuffer();
         buffer.Write(PacketType.State);
         buffer.Write(nextstate);
-        GameController.instance.SendPacket(SendType.SlowButReliable, NetworkTarget.Others, buffer);
+        GameController.instance.SendPacket(SendType.FastButUnreliable, NetworkTarget.Others, buffer);
     }
 }

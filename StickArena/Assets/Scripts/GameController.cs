@@ -103,7 +103,7 @@ public class GameController : MonoBehaviour, ISteamController
 
         yield return a;
         
-        Game game = FindObjectOfType<Game>();
+        game = FindObjectOfType<Game>();
         game.Initialize(info);
 
         foreach (Player player in lobby.players.Values)
@@ -152,7 +152,8 @@ public class GameController : MonoBehaviour, ISteamController
                     foreach (CSteamID player in lobby.players.Keys)
                         if (player != this.player.ID && player != sender)
                             steam.Send(player, data, sendtype);
-                    OnPacket(data);
+                    if (sender != player.ID)
+                        OnPacket(data);
                     break;
 
                 case NetworkTarget.Host:
@@ -183,7 +184,7 @@ public class GameController : MonoBehaviour, ISteamController
         CSteamID sender = firstBuffer.ReadSteamID();
         CSteamID receiver = firstBuffer.ReadSteamID();
         byte[] bytes = (byte[])firstBuffer.ReadList(typeof(byte[]));
-        NetworkBuffer buffer = new NetworkBuffer(bytes);
+        NetworkBuffer buffer = new NetworkBuffer(bytes); Debug.Log(string.Format("Packet from {0} to {1} with {2} bytes.", sender, receiver == CSteamID.Nil ? target.ToString() : receiver.ToString(), bytes.Length));
 
         if (target == NetworkTarget.Buffered)
         {

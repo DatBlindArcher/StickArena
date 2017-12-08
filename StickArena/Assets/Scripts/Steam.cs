@@ -118,6 +118,18 @@ public class Steam : MonoBehaviour
     {
         if (running)
             SteamAPI.RunCallbacks();
+
+        uint data;
+        while (SteamNetworking.IsP2PPacketAvailable(out data))
+        {
+            byte[] buffer = new byte[data];
+            CSteamID sender;
+
+            if (SteamNetworking.ReadP2PPacket(buffer, 1024, out data, out sender))
+            {
+                controller.OnPacket(buffer);
+            }
+        }
     }
 
     private void OnDestroy()

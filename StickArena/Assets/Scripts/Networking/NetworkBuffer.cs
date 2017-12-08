@@ -7,24 +7,23 @@ namespace ArcherNetwork
     public partial class NetworkBuffer
     {
         private static ByteStruct bs = new ByteStruct();
-        protected List<byte> writeBuffer;
+        protected List<byte> buffer;
         private int index;
-        protected byte[] readBuffer;
 
         public NetworkBuffer()
         {
-            writeBuffer = new List<byte>();
+            buffer = new List<byte>();
         }
 
         public NetworkBuffer(byte[] buffer)
         {
             index = 0;
-            readBuffer = buffer;
+            this.buffer = new List<byte>(buffer);
         }
 
         public byte[] getBytes()
         {
-            return writeBuffer.ToArray();
+            return buffer.ToArray();
         }
 
         public void ForceIndex(int index, Action action)
@@ -37,7 +36,7 @@ namespace ArcherNetwork
         
         public void Write(byte o)
         {
-            writeBuffer.Add(o);
+            buffer.Add(o);
         }
 
         public void Write(sbyte o)
@@ -241,7 +240,7 @@ namespace ArcherNetwork
 
         public byte ReadByte()
         {
-            return readBuffer[index++];
+            return buffer[index++];
         }
 
         public sbyte ReadSByte()

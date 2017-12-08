@@ -67,6 +67,7 @@ public class PlayerController : MonoBehaviour
     public void ReceiveState(PlayerState state)
     {
         if (isMine) return;
+        state.timestamp = Time.time + Time.fixedDeltaTime;
         currentstate = nextstate.copy;
         nextstate = state;
     }

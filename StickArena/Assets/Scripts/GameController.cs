@@ -184,8 +184,8 @@ public class GameController : MonoBehaviour, ISteamController
         CSteamID sender = firstBuffer.ReadSteamID();
         CSteamID receiver = firstBuffer.ReadSteamID();
         byte[] bytes = (byte[])firstBuffer.ReadList(typeof(byte[]));
-        NetworkBuffer buffer = new NetworkBuffer(bytes); Debug.Log(string.Format("Packet from {0} to {1} with {2} bytes.", sender, receiver == CSteamID.Nil ? target.ToString() : receiver.ToString(), bytes.Length));
-
+        NetworkBuffer buffer = new NetworkBuffer(bytes);
+        
         if (target == NetworkTarget.Buffered)
         {
             bufferPackets.Add(data);

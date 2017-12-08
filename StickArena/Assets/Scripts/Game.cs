@@ -30,6 +30,8 @@ public class Game : MonoBehaviour
 
     public void OnPlayerLeft(Player player)
     {
+        Destroy(players[player.ID].gameObject);
+
         if (!players.ContainsKey(player.ID))
             return;
 
@@ -47,7 +49,8 @@ public class Game : MonoBehaviour
         {
             case PacketType.State:
                 PlayerState state = (PlayerState)buffer.ReadNetworkObject(typeof(PlayerState));
-                players[sender.ID].ReceiveState(state);
+                if (players.ContainsKey(sender.ID))
+                    players[sender.ID].ReceiveState(state);
                 break;
         }
     }

@@ -2,7 +2,7 @@
 
 namespace ArcherNetwork
 {
-    public partial class NetworkBuffer
+    public partial class Packet
     {
         public void Write(Vector2 o)
         {

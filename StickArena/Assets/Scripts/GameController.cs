@@ -80,10 +80,10 @@ public class GameController : MonoBehaviour, ISteamController
     {
         if (lobby.isHost)
         {
-            NetworkBuffer buffer = new NetworkBuffer();
-            buffer.Write(PacketType.StartGame);
-            buffer.Write(info);
-            steam.SendLobbyMessage(buffer.getBytes());
+            Packet packet = new Packet();
+            packet.Write(PacketType.StartGame);
+            packet.Write(info);
+            steam.SendLobbyMessage(packet.GetBytes());
         }
     }
 
@@ -112,29 +112,29 @@ public class GameController : MonoBehaviour, ISteamController
         DestroyImmediate(loading.gameObject);
     }
 
-    public void SendPacket(SendType sendType, NetworkTarget target, NetworkBuffer buffer)
+    public void SendPacket(SendType sendType, NetworkTarget target, Packet packet)
     {
-        SendPacket(sendType, target, player.ID, CSteamID.Nil, buffer);
+        SendPacket(sendType, target, player.ID, CSteamID.Nil, packet);
     }
 
-    public void SendPacket(SendType sendType, CSteamID receiver, NetworkBuffer buffer)
+    public void SendPacket(SendType sendType, CSteamID receiver, Packet packet)
     {
-        SendPacket(sendType, NetworkTarget.Single, player.ID, receiver, buffer);
+        SendPacket(sendType, NetworkTarget.Single, player.ID, receiver, packet);
     }
 
-    private void SendPacket(SendType sendType, NetworkTarget target, CSteamID sender, CSteamID receiver, NetworkBuffer buffer)
+    private void SendPacket(SendType sendType, NetworkTarget target, CSteamID sender, CSteamID receiver, Packet packet)
     {
-        byte[] bytes = buffer.getBytes();
+        byte[] bytes = packet.GetBytes();
         EP2PSend sendtype = sendType == SendType.SlowButReliable ? EP2PSend.k_EP2PSendReliable : EP2PSend.k_EP2PSendUnreliableNoDelay;
 
-        NetworkBuffer finalBuffer = new NetworkBuffer();
-        finalBuffer.Write(lobby.isHost);
-        finalBuffer.Write(sendType);
-        finalBuffer.Write(target);
-        finalBuffer.Write(sender);
-        finalBuffer.Write(receiver);
-        finalBuffer.Write(bytes);
-        byte[] data = finalBuffer.getBytes();
+        Packet parent = new Packet();
+        parent.Write(lobby.isHost);
+        parent.Write(sendType);
+        parent.Write(target);
+        parent.Write(sender);
+        parent.Write(receiver);
+        parent.Write(bytes);
+        byte[] data = parent.GetBytes();
 
         if (lobby.isHost)
         {
@@ -177,14 +177,14 @@ public class GameController : MonoBehaviour, ISteamController
 
     public void OnPacket(byte[] data)
     {
-        NetworkBuffer firstBuffer = new NetworkBuffer(data);
-        bool fromHost = firstBuffer.ReadBool();
-        SendType sendType = (SendType)firstBuffer.ReadEnum(typeof(SendType));
-        NetworkTarget target = (NetworkTarget)firstBuffer.ReadEnum(typeof(NetworkTarget));
-        CSteamID sender = firstBuffer.ReadSteamID();
-        CSteamID receiver = firstBuffer.ReadSteamID();
-        byte[] bytes = (byte[])firstBuffer.ReadList(typeof(byte[]));
-        NetworkBuffer buffer = new NetworkBuffer(bytes);
+        Packet parent = new Packet(data);
+        bool fromHost = parent.ReadBool();
+        SendType sendType = parent.ReadEnum<SendType>();
+        NetworkTarget target = parent.ReadEnum<NetworkTarget>();
+        CSteamID sender = parent.ReadSteamID();
+        CSteamID receiver = parent.ReadSteamID();
+        byte[] bytes = parent.ReadList<byte[]>();
+        Packet packet = new Packet(bytes);
         
         if (target == NetworkTarget.Buffered)
         {
@@ -196,11 +196,11 @@ public class GameController : MonoBehaviour, ISteamController
             switch (target)
             {
                 case NetworkTarget.Single:
-                    if (player.ID != receiver) SendPacket(sendType, target, sender, receiver, buffer);
+                    if (player.ID != receiver) SendPacket(sendType, target, sender, receiver, packet);
                     break;
 
                 default:
-                    SendPacket(sendType, target, sender, receiver, buffer);
+                    SendPacket(sendType, target, sender, receiver, packet);
                     break;
             }
         }
@@ -210,12 +210,12 @@ public class GameController : MonoBehaviour, ISteamController
             switch (target)
             {
                 default:
-                    game.OnPacketReceived(lobby.players[sender], buffer);
+                    game.OnPacketReceived(lobby.players[sender], packet);
                     break;
 
                 case NetworkTarget.Single:
                     if (player.ID == receiver)
-                        game.OnPacketReceived(lobby.players[sender], buffer);
+                        game.OnPacketReceived(lobby.players[sender], packet);
                     break;
             }
         }
@@ -258,13 +258,13 @@ public class GameController : MonoBehaviour, ISteamController
 
     public void OnLobbyMessage(byte[] buffer)
     {
-        NetworkBuffer nbuffer = new NetworkBuffer(buffer);
-        PacketType type = (PacketType)nbuffer.ReadEnum(typeof(PacketType));
+        Packet packet = new Packet(buffer);
+        PacketType type = packet.ReadEnum<PacketType>();
 
         switch (type)
         {
             case PacketType.StartGame:
-                StartCoroutine(LoadScene((GameInfo)nbuffer.ReadNetworkObject(typeof(GameInfo))));
+                StartCoroutine(LoadScene(packet.ReadNetworkObject<GameInfo>()));
                 break;
 
             default:

@@ -25,16 +25,16 @@ public class GameInfo : INetworkObject
     public GameMode mode;
     public GameMap map;
 
-    public void Serialize(NetworkBuffer buffer)
+    public void Serialize(Packet packet)
     {
-        buffer.Write(mode);
-        buffer.Write(map);
+        packet.Write(mode);
+        packet.Write(map);
     }
 
-    public void Deserialize(NetworkBuffer buffer)
+    public void Deserialize(Packet packet)
     {
-        mode = (GameMode)buffer.ReadEnum(typeof(GameMode));
-        map = (GameMap)buffer.ReadEnum(typeof(GameMap));
+        mode = packet.ReadEnum<GameMode>();
+        map = packet.ReadEnum<GameMap>();
     }
 }
 

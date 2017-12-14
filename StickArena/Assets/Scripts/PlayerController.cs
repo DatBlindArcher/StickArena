@@ -6,8 +6,8 @@ public class PlayerController : MonoBehaviour
 {
     public float speed;
     public float sprintSpeed;
-    public float raycastRadius;
-    public float raycastDistance;
+    public float raycastDepth;
+    public Vector2 raycastSize;
 
     public KeyCode forward;
     public KeyCode backward;
@@ -92,7 +92,7 @@ public class PlayerController : MonoBehaviour
 
         if (Mathf.Abs(movement.x) > 0f)
         {
-            hit = Physics2D.CircleCast(nextstate.pos + new Vector2(movement.x, 0f) * raycastDistance, raycastRadius, new Vector2(movement.x, 0f), movement.x);
+            hit = Physics2D.BoxCast(nextstate.pos + new Vector2(movement.x, 0f) * raycastDepth, raycastSize, 0f, new Vector2(movement.x, 0f), movement.x);
 
             if (hit.transform != null)
             {
@@ -102,7 +102,7 @@ public class PlayerController : MonoBehaviour
 
         if (Mathf.Abs(movement.y) > 0f)
         {
-            hit = Physics2D.CircleCast(nextstate.pos + new Vector2(0f, movement.y) * raycastDistance, raycastRadius, new Vector2(0f, movement.y), movement.y);
+            hit = Physics2D.BoxCast(nextstate.pos + new Vector2(0f, movement.y) * raycastDepth, raycastSize, 0f, new Vector2(0f, movement.y), movement.y);
 
             if (hit.transform != null)
             {
@@ -118,9 +118,9 @@ public class PlayerController : MonoBehaviour
         float mouseY = mouse.y - Screen.height / 2f;
         nextstate.rot = Mathf.Atan2(mouseY, mouseX) * Mathf.Rad2Deg - 90f;
 
-        NetworkBuffer buffer = new NetworkBuffer();
-        buffer.Write(PacketType.State);
-        buffer.Write(nextstate);
-        GameController.instance.SendPacket(SendType.FastButUnreliable, NetworkTarget.Others, buffer);
+        Packet packet = new Packet();
+        packet.Write(PacketType.State);
+        packet.Write(nextstate);
+        GameController.instance.SendPacket(SendType.FastButUnreliable, NetworkTarget.Others, packet);
     }
 }

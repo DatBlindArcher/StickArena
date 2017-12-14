@@ -39,19 +39,19 @@ public class PlayerState : INetworkObject
         }
     }
 
-    public void Serialize(NetworkBuffer buffer)
+    public void Serialize(Packet packet)
     {
-        buffer.Write(timestamp);
-        buffer.Write(pos);
-        buffer.Write(cam);
-        buffer.Write(rot);
+        packet.Write(timestamp);
+        packet.Write(pos);
+        packet.Write(cam);
+        packet.Write(rot);
     }
 
-    public void Deserialize(NetworkBuffer buffer)
+    public void Deserialize(Packet packet)
     {
-        timestamp = buffer.ReadFloat();
-        pos = buffer.ReadVector2();
-        cam = buffer.ReadVector2();
-        rot = buffer.ReadFloat();
+        timestamp = packet.ReadFloat();
+        pos = packet.ReadVector2();
+        cam = packet.ReadVector2();
+        rot = packet.ReadFloat();
     }
 }

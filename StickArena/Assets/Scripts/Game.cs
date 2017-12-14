@@ -43,12 +43,12 @@ public class Game : MonoBehaviour
 
     }
 
-    public void OnPacketReceived(Player sender, NetworkBuffer buffer)
+    public void OnPacketReceived(Player sender, Packet packet)
     {
-        switch ((PacketType)buffer.ReadEnum(typeof(PacketType)))
+        switch (packet.ReadEnum<PacketType>())
         {
             case PacketType.State:
-                PlayerState state = (PlayerState)buffer.ReadNetworkObject(typeof(PlayerState));
+                PlayerState state = packet.ReadNetworkObject<PlayerState>();
                 if (players.ContainsKey(sender.ID))
                     players[sender.ID].ReceiveState(state);
                 break;

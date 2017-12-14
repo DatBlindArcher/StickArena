@@ -4,7 +4,7 @@ using UnityEngine;
 using ArcherNetwork;
 using Steamworks;
 
-public class NetworkBufferTest
+public class PacketTest
 {
     [Test]
     public void Default()
@@ -22,56 +22,54 @@ public class NetworkBufferTest
         bool bo = false;
         char c = '\n';
 
-        NetworkBuffer buffer = new NetworkBuffer();
-        buffer.Write(b);
-        buffer.Write(sb);
-        buffer.Write(s);
-        buffer.Write(us);
-        buffer.Write(i);
-        buffer.Write(ui);
-        buffer.Write(l);
-        buffer.Write(ul);
-        buffer.Write(f);
-        buffer.Write(d);
-        buffer.Write(bo);
-        buffer.Write(c);
+        Packet packet = new Packet();
+        packet.Write(b);
+        packet.Write(sb);
+        packet.Write(s);
+        packet.Write(us);
+        packet.Write(i);
+        packet.Write(ui);
+        packet.Write(l);
+        packet.Write(ul);
+        packet.Write(f);
+        packet.Write(d);
+        packet.Write(bo);
+        packet.Write(c);
 
-        buffer = new NetworkBuffer(buffer.getBytes());
-        Assert.AreEqual(b, buffer.ReadByte());
-        Assert.AreEqual(sb, buffer.ReadSByte());
-        Assert.AreEqual(s, buffer.ReadShort());
-        Assert.AreEqual(us, buffer.ReadUShort());
-        Assert.AreEqual(i, buffer.ReadInt());
-        Assert.AreEqual(ui, buffer.ReadUInt());
-        Assert.AreEqual(l, buffer.ReadLong());
-        Assert.AreEqual(ul, buffer.ReadULong());
-        Assert.AreEqual(f, buffer.ReadFloat());
-        Assert.AreEqual(d, buffer.ReadDouble());
-        Assert.AreEqual(bo, buffer.ReadBool());
-        Assert.AreEqual(c, buffer.ReadChar());
-
-        buffer.ForceIndex(6, () => { Assert.AreEqual(i, buffer.ReadUInt()); });
+        packet = new Packet(packet.GetBytes());
+        Assert.AreEqual(b, packet.ReadByte());
+        Assert.AreEqual(sb, packet.ReadSByte());
+        Assert.AreEqual(s, packet.ReadShort());
+        Assert.AreEqual(us, packet.ReadUShort());
+        Assert.AreEqual(i, packet.ReadInt());
+        Assert.AreEqual(ui, packet.ReadUInt());
+        Assert.AreEqual(l, packet.ReadLong());
+        Assert.AreEqual(ul, packet.ReadULong());
+        Assert.AreEqual(f, packet.ReadFloat());
+        Assert.AreEqual(d, packet.ReadDouble());
+        Assert.AreEqual(bo, packet.ReadBool());
+        Assert.AreEqual(c, packet.ReadChar());
     }
 
-    public enum NetworkBufferTestType : short
+    public enum PacketTestType : short
     {
         Nan = 0,
         None = 128,
         Nill = 256
     }
 
-    public class NetworkBufferTestObject : INetworkObject
+    public class PacketTestObject : INetworkObject
     {
         public double d;
 
-        public void Serialize(NetworkBuffer buffer)
+        public void Serialize(Packet packet)
         {
-            buffer.Write(d);
+            packet.Write(d);
         }
 
-        public void Deserialize(NetworkBuffer buffer)
+        public void Deserialize(Packet packet)
         {
-            d = buffer.ReadDouble();
+            d = packet.ReadDouble();
         }
     }
 
@@ -79,28 +77,28 @@ public class NetworkBufferTest
     public void Generic()
     {
         string s = "Hello World!";
-        NetworkBufferTestType t = NetworkBufferTestType.Nill;
-        NetworkBufferTestObject o = new NetworkBufferTestObject() { d = 56354.54 };
+        PacketTestType t = PacketTestType.Nill;
+        PacketTestObject o = new PacketTestObject() { d = 56354.54 };
         int[] a = new int[1] { 256584 };
         List<int> l = new List<int>(a);
-        List<NetworkBufferTestObject[]> overkill = new List<NetworkBufferTestObject[]>();
-        overkill.Add(new NetworkBufferTestObject[1] { o });
+        List<PacketTestObject[]> overkill = new List<PacketTestObject[]>();
+        overkill.Add(new PacketTestObject[1] { o });
 
-        NetworkBuffer buffer = new NetworkBuffer();
-        buffer.Write(s);
-        buffer.Write(t);
-        buffer.Write(o);
-        buffer.Write(a);
-        buffer.Write(l);
-        buffer.Write(overkill);
+        Packet packet = new Packet();
+        packet.Write(s);
+        packet.Write(t);
+        packet.Write(o);
+        packet.Write(a);
+        packet.Write(l);
+        packet.Write(overkill);
 
-        buffer = new NetworkBuffer(buffer.getBytes());
-        Assert.AreEqual(s, buffer.ReadString());
-        Assert.AreEqual(t, (NetworkBufferTestType)buffer.ReadEnum(typeof(NetworkBufferTestType)));
-        Assert.AreEqual(o.d, ((NetworkBufferTestObject)buffer.ReadNetworkObject(typeof(NetworkBufferTestObject))).d);
-        Assert.AreEqual(a[0], ((int[])buffer.ReadList(typeof(int[])))[0]);
-        Assert.AreEqual(a[0], ((List<int>)buffer.ReadList(typeof(List<int>)))[0]);
-        Assert.AreEqual(overkill[0][0].d, ((List<NetworkBufferTestObject[]>)buffer.ReadList(typeof(List<NetworkBufferTestObject[]>)))[0][0].d);
+        packet = new Packet(packet.GetBytes());
+        Assert.AreEqual(s, packet.ReadString());
+        Assert.AreEqual(t, packet.ReadEnum<PacketTestType>());
+        Assert.AreEqual(o.d, packet.ReadNetworkObject<PacketTestObject>().d);
+        Assert.AreEqual(a[0], packet.ReadList<int[]>()[0]);
+        Assert.AreEqual(a[0], packet.ReadList<List<int>>()[0]);
+        Assert.AreEqual(overkill[0][0].d, packet.ReadList<List<PacketTestObject[]>>()[0][0].d);
     }
 
     [Test]
@@ -111,17 +109,17 @@ public class NetworkBufferTest
         Vector4 v4 = new Vector4(4f, 5f, 56f, -3f);
         Quaternion q = new Quaternion(4f, 5f, 56f, -3f);
 
-        NetworkBuffer buffer = new NetworkBuffer();
-        buffer.Write(v2);
-        buffer.Write(v3);
-        buffer.Write(v4);
-        buffer.Write(q);
+        Packet packet = new Packet();
+        packet.Write(v2);
+        packet.Write(v3);
+        packet.Write(v4);
+        packet.Write(q);
         
-        buffer = new NetworkBuffer(buffer.getBytes());
-        Assert.AreEqual(v2, buffer.ReadVector2());
-        Assert.AreEqual(v3, buffer.ReadVector3());
-        Assert.AreEqual(v4, buffer.ReadVector4());
-        Assert.AreEqual(q, buffer.ReadQuaternion());
+        packet = new Packet(packet.GetBytes());
+        Assert.AreEqual(v2, packet.ReadVector2());
+        Assert.AreEqual(v3, packet.ReadVector3());
+        Assert.AreEqual(v4, packet.ReadVector4());
+        Assert.AreEqual(q, packet.ReadQuaternion());
     }
 
     [Test]
@@ -129,11 +127,11 @@ public class NetworkBufferTest
     {
         CSteamID id = new CSteamID(654654651654);
 
-        NetworkBuffer buffer = new NetworkBuffer();
-        buffer.Write(id);
+        Packet packet = new Packet();
+        packet.Write(id);
 
-        buffer = new NetworkBuffer(buffer.getBytes());
-        Assert.AreEqual(id, buffer.ReadSteamID());
+        packet = new Packet(packet.GetBytes());
+        Assert.AreEqual(id, packet.ReadSteamID());
     }
 
     [Test]

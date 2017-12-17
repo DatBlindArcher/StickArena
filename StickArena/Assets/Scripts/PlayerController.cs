@@ -1,7 +1,6 @@
 ﻿using ArcherNetwork;
 using UnityEngine;
 
-// Disable camera if not mine
 public class PlayerController : MonoBehaviour
 {
     public float speed;
@@ -76,6 +75,7 @@ public class PlayerController : MonoBehaviour
     {
         if (!isMine) return;
 
+        // Input
         float currentSpeed = speed;
         currentstate = nextstate.copy;
         Vector2 pos = nextstate.pos;
@@ -87,6 +87,7 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKey(left)) movement.x--;
         if (Input.GetKey(sprint)) currentSpeed = sprintSpeed;
 
+        // Physics
         RaycastHit2D hit;
         movement = Vector2.ClampMagnitude(movement, 1f) * currentSpeed * Time.fixedDeltaTime;
 
@@ -110,6 +111,7 @@ public class PlayerController : MonoBehaviour
             }
         }
 
+        // States
         nextstate.pos = pos + movement;
         nextstate.timestamp = Time.fixedTime + Time.fixedDeltaTime;
 

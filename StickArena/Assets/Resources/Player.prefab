@@ -251,8 +251,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 4
   sprintSpeed: 6
-  raycastDepth: 100
-  raycastSize: {x: 1, y: 1}
+  raycastDepth: 0.05
+  raycastSize: {x: 0.5, y: 0.5}
   forward: 119
   backward: 115
   left: 97

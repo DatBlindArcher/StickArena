@@ -252,7 +252,7 @@ MonoBehaviour:
   speed: 4
   sprintSpeed: 6
   raycastDepth: 0.05
-  raycastSize: {x: 0.5, y: 0.5}
+  raycastSize: {x: 0.001, y: 0.6}
   forward: 119
   backward: 115
   left: 97

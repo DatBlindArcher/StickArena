@@ -90,24 +90,26 @@ public class PlayerController : MonoBehaviour
         // Physics
         RaycastHit2D hit;
         movement = Vector2.ClampMagnitude(movement, 1f) * currentSpeed * Time.fixedDeltaTime;
+        float xs = Mathf.Sign(movement.x);
+        float ys = Mathf.Sign(movement.y);
 
-        if (Mathf.Abs(movement.x) > 0f)
+        if (movement.x * xs > 0f)
         {
-            hit = Physics2D.BoxCast(nextstate.pos + new Vector2(movement.x, 0f) * raycastDepth, raycastSize, 0f, new Vector2(movement.x, 0f), movement.x);
+            hit = Physics2D.BoxCast(transform.position + new Vector3(raycastSize.y / 2f * xs, 0f, 0f), new Vector2(raycastSize.x, raycastSize.y), 0f, new Vector2(movement.x, 0f), movement.x * xs);
 
             if (hit.transform != null)
             {
-                movement.x = 0f;
+                movement.x = hit.point.x - (transform.position.x + raycastSize.y / 2f * xs) - raycastDepth * xs;
             }
         }
 
-        if (Mathf.Abs(movement.y) > 0f)
+        if (movement.y * ys > 0f)
         {
-            hit = Physics2D.BoxCast(nextstate.pos + new Vector2(0f, movement.y) * raycastDepth, raycastSize, 0f, new Vector2(0f, movement.y), movement.y);
+            hit = Physics2D.BoxCast(transform.position + new Vector3(0f, raycastSize.y / 2f * ys, 0f), new Vector2(raycastSize.y, raycastSize.x), 0f, new Vector2(0f, movement.y), movement.y * ys);
 
             if (hit.transform != null)
             {
-                movement.y = 0f;
+                movement.y = hit.point.y - (transform.position.y + raycastSize.y / 2f * ys) - raycastDepth * ys;
             }
         }
 

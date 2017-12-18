@@ -1,7 +1,5 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-[RequireComponent(typeof(LineRenderer))]
 public class BallMover : MonoBehaviour
 {
     public float speed;
@@ -17,15 +15,16 @@ public class BallMover : MonoBehaviour
 
     public Vector2 movement;
 
-    private LineRenderer box;
+    private Animator anim;
 
     private void Start()
     {
-        box = GetComponent<LineRenderer>();
+        anim = GetComponentInChildren<Animator>();
     }
 
     private void FixedUpdate()
     {
+        // Setup
         float currentSpeed = speed;
         movement = Vector2.zero;
 
@@ -39,77 +38,30 @@ public class BallMover : MonoBehaviour
         // Physics
         RaycastHit2D hit;
         movement = Vector2.ClampMagnitude(movement, 1f) * currentSpeed * Time.fixedDeltaTime;
-        float xs = -Mathf.Sign(movement.x);
-        float ys = -Mathf.Sign(movement.y);
-        float xd = raycastDepth * -xs;
-        float yd = raycastDepth * -ys;
+        float xs = Mathf.Sign(movement.x);
+        float ys = Mathf.Sign(movement.y);
 
-        if (Mathf.Abs(movement.x) > 0f)
+        if (movement.x * xs > 0f)
         {
-            hit = Physics2D.BoxCast(transform.position, raycastSize, 0f, new Vector2(movement.x, 0f), movement.x + xd);
+            hit = Physics2D.BoxCast(transform.position + new Vector3(raycastSize.y / 2f * xs, 0f, 0f), new Vector2(raycastSize.x, raycastSize.y), 0f, new Vector2(movement.x, 0f), movement.x * xs);
 
             if (hit.transform != null)
             {
-                movement.x = 0f;
-                Debug.Log(hit.transform.name);
+                movement.x = hit.point.x - (transform.position.x + raycastSize.y / 2f * xs) - raycastDepth * xs;
             }
         }
 
-        if (Mathf.Abs(movement.y) > 0f)
+        if (movement.y * ys > 0f)
         {
-            hit = Physics2D.BoxCast(transform.position, raycastSize, 0f, new Vector2(0f, movement.y), movement.y + yd);
+            hit = Physics2D.BoxCast(transform.position + new Vector3(0f, raycastSize.y / 2f * ys, 0f), new Vector2(raycastSize.y, raycastSize.x), 0f, new Vector2(0f, movement.y), movement.y * ys);
 
             if (hit.transform != null)
             {
-                movement.y = 0f;
-                Debug.Log(hit.transform.name);
+                movement.y = hit.point.y - (transform.position.y + raycastSize.y / 2f * ys) - raycastDepth * ys;
             }
         }
 
-        // Draw Boxes
-        if (Input.GetKey(forward) || Input.GetKey(backward) || Input.GetKey(left) || Input.GetKey(right))
-        {
-            List<Vector3> points = new List<Vector3>();
-
-            if (Input.GetKey(left) || Input.GetKey(right))
-            {
-                // Right corner
-                points.Add((Vector2)transform.position + new Vector2(raycastSize.x, raycastSize.y) / 2f * xs);
-                points.Add((Vector2)transform.position + new Vector2(raycastSize.x, -raycastSize.y) / 2f * xs);
-
-                // Left corner
-                points.Add((Vector2)transform.position + new Vector2(-raycastSize.x / 2f + (movement.x + xd) * xs, -raycastSize.y / 2f) * xs);
-                points.Add((Vector2)transform.position + new Vector2(-raycastSize.x / 2f + (movement.x + xd) * xs, raycastSize.y / 2f) * xs);
-
-                // Close box
-                points.Add((Vector2)transform.position + new Vector2(raycastSize.x, raycastSize.y) / 2f * xs);
-            }
-
-            if (Input.GetKey(forward) || Input.GetKey(backward))
-            {
-                // Right corner
-                points.Add((Vector2)transform.position + new Vector2(raycastSize.x, raycastSize.y) / 2f * ys);
-                points.Add((Vector2)transform.position + new Vector2(-raycastSize.x, raycastSize.y) / 2f * ys);
-
-                // Left corner
-                points.Add((Vector2)transform.position + new Vector2(-raycastSize.x / 2f, -raycastSize.y / 2f + (movement.y + yd) * ys) * ys);
-                points.Add((Vector2)transform.position + new Vector2(raycastSize.x / 2f, -raycastSize.y / 2f + (movement.y + yd) * ys) * ys);
-
-                // Close box
-                points.Add((Vector2)transform.position + new Vector2(raycastSize.x, raycastSize.y) / 2f * ys);
-            }
-
-            box.positionCount = points.Count;
-            box.SetPositions(points.ToArray());
-        }
-
-        else
-        {
-            box.positionCount = 0;
-            box.SetPositions(new Vector3[0]);
-        }
-
-        if (Input.GetKeyDown(KeyCode.Space))
-            transform.position += (Vector3)movement;
+        anim.SetBool("Moving", movement.magnitude > 0f);
+        transform.position += (Vector3)movement;
     }
 }

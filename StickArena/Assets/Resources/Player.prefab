@@ -249,10 +249,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da99a3d5733ef924db69a0cd154e6b68, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  health: 0
   speed: 4
   sprintSpeed: 6
   raycastDepth: 0.05
   raycastSize: {x: 0.001, y: 0.6}
+  attack: 0
   forward: 119
   backward: 115
   left: 97
@@ -260,7 +262,6 @@ MonoBehaviour:
   sprint: 304
   root: {fileID: 4696947609725380}
   stick: {fileID: 4910442676778890}
-  weapon: {fileID: 4786413254620240}
   cam: {fileID: 1950469554368754}
 --- !u!114 &114944832357957624
 MonoBehaviour:
@@ -273,7 +274,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 717fba4009ea5b642970f9e8d3dea8f3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  attack: 323
+  center: {fileID: 4786413254620240}
 --- !u!124 &124366808332357142
 Behaviour:
   m_ObjectHideFlags: 1

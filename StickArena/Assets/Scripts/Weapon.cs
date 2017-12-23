@@ -1,10 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Weapon : MonoBehaviour
 {
-    public KeyCode attack;
+    public Transform center;
     private Animation anim;
 
     private void Start()
@@ -12,12 +10,15 @@ public class Weapon : MonoBehaviour
         anim = GetComponent<Animation>();
     }
 
-    private void Update()
+    public void Attack()
     {
-        if (Input.GetKeyDown(attack))
-        {
-            anim.Stop();
-            anim.Play();
-        }
+        anim.Stop();
+        anim.Play();
+    }
+
+    public void ActualHit()
+    {
+        // Raycast and draw health
+        // Send data to others
     }
 }

@@ -3,11 +3,14 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    public float health;
+
     public float speed;
     public float sprintSpeed;
     public float raycastDepth;
     public Vector2 raycastSize;
 
+    public KeyCode attack;
     public KeyCode forward;
     public KeyCode backward;
     public KeyCode left;
@@ -16,12 +19,12 @@ public class PlayerController : MonoBehaviour
 
     public Transform root;
     public Transform stick;
-    public Transform weapon;
     public GameObject cam;
 
     private PlayerState currentstate;
     private PlayerState nextstate;
     private Animator anim;
+    private Weapon weapon;
     private Player player;
 
     public bool isMine
@@ -43,6 +46,7 @@ public class PlayerController : MonoBehaviour
     private void Start()
     {
         anim = stick.GetComponent<Animator>();
+        weapon = stick.GetComponentInChildren<Weapon>();
         currentstate = nextstate = new PlayerState() { timestamp = Time.time, pos = root.position, cam = Vector3.zero };
     }
 
@@ -51,7 +55,7 @@ public class PlayerController : MonoBehaviour
         // Apply State
         float interpolateFactor = (Time.time - currentstate.timestamp) / Time.fixedDeltaTime;
         root.position = Vector3.LerpUnclamped(currentstate.pos, nextstate.pos, interpolateFactor);
-        weapon.rotation = Quaternion.LerpUnclamped(Quaternion.Euler(0f, 0f, currentstate.rot), Quaternion.Euler(0f, 0f, nextstate.rot), interpolateFactor);
+        weapon.center.rotation = Quaternion.LerpUnclamped(Quaternion.Euler(0f, 0f, currentstate.rot), Quaternion.Euler(0f, 0f, nextstate.rot), interpolateFactor);
 
         // Movement Rotation
         stick.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(currentstate.pos.y - root.position.y, currentstate.pos.x - root.position.x) * Mathf.Rad2Deg);
@@ -60,7 +64,18 @@ public class PlayerController : MonoBehaviour
         // Setup Between-State
         currentstate.timestamp = Time.time;
         currentstate.pos = root.position;
-        currentstate.rot = weapon.rotation.eulerAngles.z;
+        currentstate.rot = weapon.center.rotation.eulerAngles.z;
+
+        // Player Events
+        if (!isMine) return;
+
+        if (Input.GetKeyDown(attack))
+        {
+            Packet packet = new Packet();
+            packet.Write(PacketType.Attack);
+            GameController.instance.SendPacket(SendType.FastButUnreliable, NetworkTarget.Others, packet);
+            Attack();
+        }
     }
 
     public void ReceiveState(PlayerState state)
@@ -69,6 +84,11 @@ public class PlayerController : MonoBehaviour
         state.timestamp = Time.time + Time.fixedDeltaTime;
         currentstate = nextstate.copy;
         nextstate = state;
+    }
+
+    public void Attack()
+    {
+        weapon.Attack();
     }
 
     private void FixedUpdate()
